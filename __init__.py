@@ -15,6 +15,7 @@ from shed.tkinterTools import *
 
 #---------Screens--------
 
+
 class startScreen(screen):
     """
     The Programs startScreen
@@ -35,16 +36,11 @@ class startScreen(screen):
         self.listbox=advancedListbox(self)
         self.listbox.grid(row=1,column=0,sticky="NSEW")
         #Bottom Bar
-        self.bottomBar=mainFrame(self)
-        self.bottomBar.grid(row=2,column=0)
-        self.bottomBar.gridConfig(0)
-        self.bottomButtonBar=mainFrame(self.bottomBar)
-        self.bottomButtonBar.grid(row=0,column=0,pady=20)
-        #Add Buttons
-        self.createButton=Button(self.bottomButtonBar,text="Create",width=globalButtonWidth)
-        self.createButton.grid(row=0,column=0,padx=10)
-        self.openButton=Button(self.bottomButtonBar,text="Open",width=globalButtonWidth)
-        self.openButton.grid(row=0,column=1,padx=10)
+        self.buttonBar=buttonSection(self)
+        self.buttonBar.grid(row=2,column=0)
+        self.buttonBar.addButton("Create")
+        self.buttonBar.addButton("Open")
+        
 
 class createDatabaseWindow(mainTopLevel):
     """
@@ -61,9 +57,22 @@ class createDatabaseWindow(mainTopLevel):
         self.centerFrame=mainFrame(self)
         self.centerFrame.grid(row=0,column=0)
         #Add data sections
-        self.databaseNameSection=dataSection(self.centerFrame,"Name: ")
+        self.databaseNameSection=dataSection(self.centerFrame,"Database Name: ")
         self.databaseNameSection.grid(row=0,column=0)
+        #Add Button Bar
+        self.buttonBar=buttonSection(self)
+        self.buttonBar.grid(row=1,column=0)
+        self.buttonBar.addButton("Quit")
+        self.buttonBar.addButton("Save")
 
+
+#---------Other Classes--------
+
+class tempDatabase:
+    def __init__(self,name):
+        self.name=name
+        self.age=10
+        self.myList=["angus","goody"]
 
 #---------Main Program--------
 
@@ -81,26 +90,49 @@ class inventoryWindow(Tk):
         self.grid_rowconfigure(0,weight=1)
         self.screenMaster=screenController(self)
         self.screenMaster.grid(row=0,column=0,sticky="NSEW")
+        #Project manager setup
+        self.projectManager=projectManager(getWorkingDirectory(),"inventory")
+        self.projectManager.fileExtension=".inv"
+
 
         #----------Instances---------
         #Screen Instances
         self.startScreen=startScreen(self.screenMaster)
         self.startScreen.show()
-        #TopLevel Instances
-        self.createDatabaseWindow=createDatabaseWindow(self)
+
 
         #----------Commands---------
         #-----Home Screen-----
-        self.startScreen.createButton.config(command=self.launchCreateDatabaseWindow)
+        self.startScreen.buttonBar.getButton("Create").config(command=self.launchCreateDatabaseWindow)
 
+        #----------Testing---------
+        #self.tempDB=tempDatabase("harry")
+        #self.projectManager.saveUserData("harry",self.tempDB)
+        self.findAllUserData()
 
+    def findAllUserData(self):
+        """
+        Will locate user data
+        """
+        data=self.projectManager.findAllUserFiles()
+        print(data)
+    
     def launchCreateDatabaseWindow(self):
         """
         Launches a window
         for the user to create a new database
         """
-        self.createDatabaseWindow.runWindow()
+        newWindow=createDatabaseWindow(self)
+        newWindow.runWindow()
+        #Config Buttons
+        newWindow.buttonBar.getButton("Quit").config(command=lambda: newWindow.quit())
 
+    def checkNewDatabaseName(self,name):
+        """
+        Will check the name the user
+        entered is valid
+        """
+        pass
 
 
 if __name__ == '__main__':
