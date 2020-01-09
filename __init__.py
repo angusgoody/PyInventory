@@ -108,14 +108,15 @@ class inventoryWindow(Tk):
         #----------Testing---------
         #self.tempDB=tempDatabase("harry")
         #self.projectManager.saveUserData("harry",self.tempDB)
-        self.findAllUserData()
+        self.loadAllUserDatabases()
 
-    def findAllUserData(self):
+    def loadAllUserDatabases(self):
         """
         Will locate user data
         """
         data=self.projectManager.findAllUserFiles()
-        print(data)
+        #Add objects to the listbox
+        
     
     def launchCreateDatabaseWindow(self):
         """
@@ -126,14 +127,27 @@ class inventoryWindow(Tk):
         newWindow.runWindow()
         #Config Buttons
         newWindow.buttonBar.getButton("Quit").config(command=lambda: newWindow.quit())
+        newWindow.buttonBar.getButton("Save").config(command=lambda: 
+            self.checkNewDatabaseName(newWindow.databaseNameSection.entry))
 
-    def checkNewDatabaseName(self,name):
+    def checkNewDatabaseName(self,advancedEntryObject):
         """
         Will check the name the user
         entered is valid
         """
-        pass
+        validOrNot=advancedEntryObject.contentValid
+        if validOrNot:
+            print("Ready to create database")
+        else:
+            reason=advancedEntryObject.reasonInvalid
+            showMessage("Error",reason)
 
+
+    def createNewDatabase(self,name):
+        """
+        Will create a new database
+        """
+        pass
 
 if __name__ == '__main__':
     window=inventoryWindow()
