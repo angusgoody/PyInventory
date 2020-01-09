@@ -10,7 +10,7 @@ Angus Goody
 from shed.colourTools import *
 from shed.storageTools import *
 from shed.tkinterTools import *
-
+from dm import *
 
 
 #---------Screens--------
@@ -40,7 +40,29 @@ class startScreen(screen):
         self.buttonBar.grid(row=2,column=0)
         self.buttonBar.addButton("Create")
         self.buttonBar.addButton("Open")
-        
+     
+class dbHomeScreen(screen):
+    """
+    Where the user 
+    is first taken
+    when opening a database
+    """
+    def __init__(self,controller):
+        screen.__init__(self,controller,"View")
+        #Configure
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(1,weight=1)
+        #Top Bar
+        self.topBar=mainFrame(self)
+        self.topBar.grid(row=0,column=0)
+        self.topBar.gridConfig(0)
+        #Label
+        self.titleLabel=Label(self.topBar,text="Viewing Database",font=globalFontBig)
+        self.titleLabel.grid(row=0,column=0,pady=6)
+
+
+
+#---------Popups--------
 
 class createDatabaseWindow(mainTopLevel):
     """
@@ -62,7 +84,7 @@ class createDatabaseWindow(mainTopLevel):
         #Add Button Bar
         self.buttonBar=buttonSection(self)
         self.buttonBar.grid(row=1,column=0)
-        self.buttonBar.addButton("Quit")
+        self.buttonBar.addButton("Cancel")
         self.buttonBar.addButton("Save")
 
 
@@ -99,11 +121,12 @@ class inventoryWindow(Tk):
         #Screen Instances
         self.startScreen=startScreen(self.screenMaster)
         self.startScreen.show()
-
+        self.dbHomeScreen=dbHomeScreen(self.screenMaster)
 
         #----------Commands---------
         #-----Home Screen-----
         self.startScreen.buttonBar.getButton("Create").config(command=self.launchCreateDatabaseWindow)
+        self.startScreen.buttonBar.getButton("Open").config(command=self.attemptOpenDatabase)
 
         #----------Testing---------
         #self.tempDB=tempDatabase("harry")
@@ -114,41 +137,85 @@ class inventoryWindow(Tk):
         """
         Will locate user data
         """
-        data=self.projectManager.findAllUserFiles()
-        #Add objects to the listbox
-        
-    
+        data=self.projectManager.loadAllUserFiles()
+        for obj in data:
+            self.startScreen.listbox.addObject(obj.name,obj)
+
+
+    def checkNewDatabaseName(self,windowObject):
+        """
+        Will check the name the user
+        entered is valid, create it
+        and then load the screen
+        """
+        advancedEntryObject=windowObject.databaseNameSection.entry
+        validOrNot=advancedEntryObject.contentValid
+        content=advancedEntryObject.getContent()
+        if validOrNot:
+            #Create and save the new db
+            newDb=self.createNewDatabase(content)
+            #Close the popup
+            windowObject.quit()
+            #Open the new database
+            print("Ready to open")
+            self.displayDatabase(newDb)
+
+        else:
+            reason=advancedEntryObject.reasonInvalid
+            showMessage("Error",reason)
+
+    def createNewDatabase(self,name):
+        """
+        Will create a new database
+        given a name
+        """
+        newDb=dataBase(name)
+        #Store
+        self.projectManager.saveUserData(name,newDb)
+        return newDb
+
+    def displayDatabase(self,dataBaseObject):
+        """
+        Will take datbase as parameter
+        and display it on the screen
+        """
+        self.dbHomeScreen.show()
+
+    #---------Button Commands----------
+
     def launchCreateDatabaseWindow(self):
         """
         Launches a window
         for the user to create a new database
         """
+        #Before launching find existing names to add to banned words
+        bannedWords=[]
+        allFilenames=self.projectManager.findAllUserFiles()
+        for item in allFilenames:
+            bannedWords.append(getFileWithoutExtension(item))
+        #Create our new popup
         newWindow=createDatabaseWindow(self)
-        newWindow.runWindow()
+        #Add banned words
+        newWindow.databaseNameSection.entry.bannedWords=bannedWords
         #Config Buttons
-        newWindow.buttonBar.getButton("Quit").config(command=lambda: newWindow.quit())
+        newWindow.buttonBar.getButton("Cancel").config(command=lambda: newWindow.quit())
         newWindow.buttonBar.getButton("Save").config(command=lambda: 
-            self.checkNewDatabaseName(newWindow.databaseNameSection.entry))
+            self.checkNewDatabaseName(newWindow))
 
-    def checkNewDatabaseName(self,advancedEntryObject):
+
+        newWindow.runWindow()
+
+    def attemptOpenDatabase(self):
         """
-        Will check the name the user
-        entered is valid
+        Called when user clicks
+        the "Open" button on start screen
         """
-        validOrNot=advancedEntryObject.contentValid
-        if validOrNot:
-            print("Ready to create database")
+        #Get object from listbox
+        current=self.startScreen.listbox.getCurrentObject()
+        if current:
+            self.displayDatabase(current)
         else:
-            reason=advancedEntryObject.reasonInvalid
-            showMessage("Error",reason)
-
-
-    def createNewDatabase(self,name):
-        """
-        Will create a new database
-        """
-        pass
-
+            showMessage("Error","Please select a database or create one")
 if __name__ == '__main__':
     window=inventoryWindow()
     window.mainloop()
