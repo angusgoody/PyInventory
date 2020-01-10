@@ -18,11 +18,11 @@ class dataBase:
     is used to store
     categories or items
     """
+     #Store valid templates
     def __init__(self,dbName):
         self.name=dbName
         self.categories={} #Store categories
         self.items={} #Store items
-        self.validTemplates=[clothingTemplate] #Store valid templates
 
     def addCategory(self,catName):
         """
@@ -158,6 +158,7 @@ class dbItem:
         currentLevel=kwargs.get("level",0)
         indent="    "*(currentLevel)
         print(indent,"*",self.itemName)
+
 class dbItemField:
     """
     The dbItemField
@@ -209,6 +210,17 @@ class dbItemParagraphField(dbItemField):
 
 #-----------Item Templates----------
 
+class templateManager:
+    """
+    Will manage a programs templates
+    """
+    def __init__(self):
+        self.templateDict={
+        "None":dbItem,
+        "Clothing":clothingTemplate,
+        "Computer":computerTemplate,
+        }
+
 class clothingTemplate(dbItem):
     """
     Template for storing
@@ -221,3 +233,19 @@ class clothingTemplate(dbItem):
         self.addField("Purchase Date","Text")
         self.addField("Purchase Price","Currency")
         self.addField("Value","Currency")
+
+class computerTemplate(dbItem):
+    """
+    Template for a computer
+    """
+    def __init__(self,name):
+        dbItem.__init__(self,name)
+        #Add info
+        self.addField("Brand","Text")
+        self.addField("Purchase Date","Text")
+        self.addField("Purchase Price","Currency")
+        self.addField("Processor","Text")
+        self.addField("Ram","Text")
+
+
+

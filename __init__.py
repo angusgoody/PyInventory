@@ -150,7 +150,15 @@ class addItemWindow(mainTopLevel):
             #Add the cat to the display
             self.categorySection.optionVar.set(catInstance.name)
 
-
+    def updateTemplate(self,name,tmpInstance):
+        """
+        Will update the text for the optionMenu
+        displaying the template
+        """
+        #Store
+        self.currentTemplate=tmpInstance
+        #Update the text
+        self.templateSection.optionVar.set(name)
 #---------Other Classes--------
 
 class tempDatabase:
@@ -180,6 +188,7 @@ class inventoryWindow(Tk):
         self.projectManager.fileExtension=".inv"
         #Store globals
         self.currentDB=None
+        self.templateManager=templateManager()
 
 
         #----------Instances---------
@@ -204,7 +213,7 @@ class inventoryWindow(Tk):
 
         #----------testing---------
         """
-        newDb=dataBase("Tester")
+        newDb=dataBase("Bagggz")
         newDb.addCategory("Electronics")
         newDb.addItem("Macbook",cat="Electronics")
         newDb.addItem("iPad",cat="Electronics")
@@ -317,6 +326,7 @@ class inventoryWindow(Tk):
         """
         newWindow=addItemWindow(self)
 
+        #--------Adding categories--------
         #Clear the menu
         optMenu=newWindow.categorySection.optionMenu.children["menu"]
         optMenu.delete(0,"end")
@@ -336,7 +346,20 @@ class inventoryWindow(Tk):
             optMenu.add_command(label=display,
                 command=lambda o=obj: newWindow.updateCategory(o))
 
-        
+        #--------Adding templates--------
+        tmpMenu=newWindow.templateSection.optionMenu.children["menu"]
+        tmpDict=self.templateManager.templateDict
+        tmpMenu.delete(0,"end")
+        #Find the valid templates (None is included in class dict)
+        for t in self.templateManager.templateDict:
+            display=t
+            obj=tmpDict[t]
+            #Add the command using lambda
+            tmpMenu.add_command(label=display,
+                command=lambda o=obj,n=display: newWindow.updateTemplate(n,o))
+            #Add the seperator after None
+            if display == "None":
+                tmpMenu.insert_separator(1)
 
         newWindow.runWindow()
 
