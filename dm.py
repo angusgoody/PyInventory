@@ -22,6 +22,96 @@ class dataBase:
         self.name=dbName
         self.categories={} #Store categories
         self.items={} #Store items
+        self.validTemplates=[clothingTemplate] #Store valid templates
+
+    def addCategory(self,catName):
+        """
+        Will add a category to the
+        database
+        """
+        if catName not in self.categories:
+            newCat=dbCategory(catName)
+            self.categories[catName]=newCat
+
+    def addItem(self,itemName,**kwargs):
+        """
+        Will add an item to the database
+        the optional parameter is category
+        "cat" = category
+        """
+        cat=kwargs.get("cat")
+        if cat in self.categories:
+            self.categories[cat].addItem(itemName)
+        else:
+            #Create an item
+            newItem=dbItem(itemName)
+            #Store it
+            self.items[itemName]=newItem
+
+    def addTemplate(self,itemName,templateClass):
+        """
+        Create a item with a template
+        already
+        """
+        if templateClass in self.validTemplates:
+            #Create the template
+            newTemplate=templateClass(itemName)
+            #Store
+            self.items[itemName]=newTemplate
+        else:
+            print("Invalid template")
+
+
+    def displayStr(self,**kwargs):
+        """
+        Display all data
+        """
+        currentLevel=kwargs.get("level",0)
+        indent="    "*(currentLevel)
+        print(indent,"======"+str(self.name)+"======")
+        #Display Items
+        for item in self.items:
+            self.items[item].displayStr(level=currentLevel)
+        #Display Categories
+        for cat in self.categories:
+            self.categories[cat].displayStr(level=currentLevel+1)
+
+    
+    def getIndentedCatNames(self,**kwargs):
+        """
+        Return an array of names with appropriate indentation
+        """
+        currentLevel=kwargs.get("level",-1)
+        indent="   "*(currentLevel)
+        newArray=[]
+        #Add self
+        if currentLevel > -1:
+            newArray.append([indent+str(self.name),self])
+        #Add children
+        for cat in self.categories:
+            allNames=self.categories[cat].getIndentedCatNames(level=currentLevel+1)
+            for i in allNames:
+                print(i)
+                newArray.append(i)
+        return newArray
+        
+    def getCategory(self,catName):
+        """
+        Return category object
+        """
+        if catName in self.categories:
+            return self.categories[catName]
+
+
+class dbCategory(dataBase):
+    """
+    A category is a way
+    to further organise
+    contents of the db
+    """
+    def __init__(self,catName):
+        dataBase.__init__(self,catName)
+
 
 class dbItem:
     """
@@ -59,6 +149,13 @@ class dbItem:
             #Store
             self.fields.append(newField)
 
+    def displayStr(self,**kwargs):
+        """
+        Display the item
+        """
+        currentLevel=kwargs.get("level",0)
+        indent="    "*(currentLevel)
+        print(indent,"*",self.itemName)
 class dbItemField:
     """
     The dbItemField
