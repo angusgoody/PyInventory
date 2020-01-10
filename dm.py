@@ -64,7 +64,8 @@ class dataBase:
 
     def displayStr(self,**kwargs):
         """
-        Display all data
+        Display a heirachy of databases
+        and children indented
         """
         currentLevel=kwargs.get("level",0)
         indent="    "*(currentLevel)
@@ -79,7 +80,9 @@ class dataBase:
     
     def getIndentedCatNames(self,**kwargs):
         """
-        Return an array of names with appropriate indentation
+        Will return an array with appropriate
+        indentation to display parent/child
+        databases and will also return objects
         """
         currentLevel=kwargs.get("level",-1)
         indent="   "*(currentLevel)
@@ -91,7 +94,6 @@ class dataBase:
         for cat in self.categories:
             allNames=self.categories[cat].getIndentedCatNames(level=currentLevel+1)
             for i in allNames:
-                print(i)
                 newArray.append(i)
         return newArray
         

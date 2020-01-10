@@ -139,11 +139,16 @@ class addItemWindow(mainTopLevel):
         """
         Will update the text for the
         option menu and store the object
+        kwargs can be used to specify
+        if the instance is the default (None)
         """
         #Store
         self.currentCat=catInstance
-        #Add the cat to the display
-        self.categorySection.optionVar.set(catInstance.name)
+        if type(catInstance) is dataBase:
+            self.categorySection.optionVar.set("None")
+        else:
+            #Add the cat to the display
+            self.categorySection.optionVar.set(catInstance.name)
 
 
 #---------Other Classes--------
@@ -235,7 +240,6 @@ class inventoryWindow(Tk):
         for obj in data:
             self.startScreen.listbox.addObject(obj.name,obj)
 
-
     def checkNewDatabaseName(self,windowObject):
         """
         Will check the name the user
@@ -313,16 +317,26 @@ class inventoryWindow(Tk):
         """
         newWindow=addItemWindow(self)
 
-        #View all the categories
+        #Clear the menu
+        optMenu=newWindow.categorySection.optionMenu.children["menu"]
+        optMenu.delete(0,"end")
+        #Add the None option
+        optMenu.add_command(label="None",
+            command=lambda o=self.currentDB:newWindow.updateCategory(o))
+        #Setup the None category as default if user picks nothing
+        newWindow.updateCategory(self.currentDB)
+        #Add a seperator
+        optMenu.insert_separator(1)
+        #Get all child categories and add commands
         catArray=self.currentDB.getIndentedCatNames()
         #Add themy to the optionMenu
         for item in catArray:
             display=item[0]
             obj=item[1]
-            newWindow.categorySection.optionMenu.children["menu"].add_command(label=display,
+            optMenu.add_command(label=display,
                 command=lambda o=obj: newWindow.updateCategory(o))
 
-        print(catArray)
+        
 
         newWindow.runWindow()
 
