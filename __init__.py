@@ -159,6 +159,50 @@ class addItemWindow(mainTopLevel):
         self.currentTemplate=tmpInstance
         #Update the text
         self.templateSection.optionVar.set(name)
+
+
+    def loadContents(self,currentDB,templateManager):
+        """
+        Will use the currentDB object
+        to load the contents of the
+        window
+        """
+        #--------Adding categories--------
+        #Clear the menu
+        optMenu=self.categorySection.optionMenu.children["menu"]
+        optMenu.delete(0,"end")
+        #Add the None option
+        optMenu.add_command(label="None",
+            command=lambda o=currentDB:self.updateCategory(o))
+
+        #Setup the None category as default if user picks nothing
+        self.updateCategory(currentDB)
+        #Add a seperator
+        optMenu.insert_separator(1)
+        #Get all child categories and add commands
+        catArray=currentDB.getIndentedCatNames()
+        #Add themy to the optionMenu
+        for item in catArray:
+            display=item[0]
+            obj=item[1]
+            optMenu.add_command(label=display,
+                command=lambda o=obj: self.updateCategory(o))
+
+        #--------Adding templates--------
+        tmpMenu=self.templateSection.optionMenu.children["menu"]
+        tmpDict=templateManager.templateDict
+        tmpMenu.delete(0,"end")
+        #Find the valid templates (None is included in class dict)
+        for t in tmpDict:
+            display=t
+            obj=tmpDict[t]
+            #Add the command using lambda
+            tmpMenu.add_command(label=display,
+                command=lambda o=obj,n=display: self.updateTemplate(n,o))
+            #Add the seperator after None
+            if display == "None":
+                tmpMenu.insert_separator(1)
+
 #---------Other Classes--------
 
 class tempDatabase:
@@ -325,42 +369,7 @@ class inventoryWindow(Tk):
         to allow users to "add item"
         """
         newWindow=addItemWindow(self)
-
-        #--------Adding categories--------
-        #Clear the menu
-        optMenu=newWindow.categorySection.optionMenu.children["menu"]
-        optMenu.delete(0,"end")
-        #Add the None option
-        optMenu.add_command(label="None",
-            command=lambda o=self.currentDB:newWindow.updateCategory(o))
-        #Setup the None category as default if user picks nothing
-        newWindow.updateCategory(self.currentDB)
-        #Add a seperator
-        optMenu.insert_separator(1)
-        #Get all child categories and add commands
-        catArray=self.currentDB.getIndentedCatNames()
-        #Add themy to the optionMenu
-        for item in catArray:
-            display=item[0]
-            obj=item[1]
-            optMenu.add_command(label=display,
-                command=lambda o=obj: newWindow.updateCategory(o))
-
-        #--------Adding templates--------
-        tmpMenu=newWindow.templateSection.optionMenu.children["menu"]
-        tmpDict=self.templateManager.templateDict
-        tmpMenu.delete(0,"end")
-        #Find the valid templates (None is included in class dict)
-        for t in self.templateManager.templateDict:
-            display=t
-            obj=tmpDict[t]
-            #Add the command using lambda
-            tmpMenu.add_command(label=display,
-                command=lambda o=obj,n=display: newWindow.updateTemplate(n,o))
-            #Add the seperator after None
-            if display == "None":
-                tmpMenu.insert_separator(1)
-
+        newWindow.loadContents(self.currentDB,self.templateManager)
         newWindow.runWindow()
 
     def attemptOpenDatabase(self):
