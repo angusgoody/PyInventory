@@ -102,6 +102,21 @@ class createDatabaseWindow(mainTopLevel):
         self.buttonBar.grid(row=1,column=0)
         self.buttonBar.addButton("Cancel")
         self.buttonBar.addButton("Save")
+        #Add exit button command
+        self.buttonBar.getButton("Cancel").config(command=self.quit)
+
+    def setup(self):
+        #Before launching find existing names to add to banned words
+        bannedWords=[]
+        allFilenames=self.master.projectManager.findAllUserFiles()
+        for item in allFilenames:
+            bannedWords.append(getBasename(getFileWithoutExtension(item)))
+        print("Banned words",bannedWords)
+        #Add banned words
+        self.databaseNameSection.entry.bannedWords=bannedWords
+        #Config Buttons
+        self.buttonBar.getButton("Save").config(command=lambda: 
+            self.master.checkNewDatabaseName(self))
 
 class addItemWindow(mainTopLevel):
     """
@@ -134,6 +149,8 @@ class addItemWindow(mainTopLevel):
         self.buttonBar.grid(row=1,column=0)
         self.buttonBar.addButton("Cancel")
         self.buttonBar.addButton("Save")
+        #Add exit button command
+        self.buttonBar.getButton("Cancel").config(command=self.quit)
 
     def updateCategory(self,catInstance):
         """
@@ -290,8 +307,12 @@ class inventoryWindow(Tk):
         data=self.projectManager.loadAllUserFiles()
         #Clear the listbox
         self.startScreen.listbox.clear()
-        for obj in data:
-            self.startScreen.listbox.addObject(obj.name,obj)
+        for name in data:
+            obj=data[name]
+            #If the file name has been changed externally
+            if obj.name != name:
+                name=str(name)+" ("+str(obj.name)+")"
+            self.startScreen.listbox.addObject(name,obj)
 
     def checkNewDatabaseName(self,windowObject):
         """
@@ -345,22 +366,9 @@ class inventoryWindow(Tk):
         Launches a window
         for the user to create a new database
         """
-        #Before launching find existing names to add to banned words
-        bannedWords=[]
-        allFilenames=self.projectManager.findAllUserFiles()
-        for item in allFilenames:
-            bannedWords.append(getBasename(getFileWithoutExtension(item)))
-        print("Banned words are",bannedWords)
         #Create our new popup
         newWindow=createDatabaseWindow(self)
-        #Add banned words
-        newWindow.databaseNameSection.entry.bannedWords=bannedWords
-        #Config Buttons
-        newWindow.buttonBar.getButton("Cancel").config(command=lambda: newWindow.quit())
-        newWindow.buttonBar.getButton("Save").config(command=lambda: 
-            self.checkNewDatabaseName(newWindow))
-
-
+        newWindow.setup()
         newWindow.runWindow()
 
     def launchAddItemWindow(self):
