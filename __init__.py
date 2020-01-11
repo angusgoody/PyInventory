@@ -91,27 +91,139 @@ class viewScreen(screen):
         self.grid_columnconfigure(0,weight=1)
         self.grid_columnconfigure(1,weight=1)
         self.grid_columnconfigure(2,weight=3)
+
+        #--------First Layer---------
         #Sections
         self.topBar=mainFrame(self)
         self.allCatSection=mainFrame(self)
         self.allItemSection=mainFrame(self)
         self.viewItemSection=mainFrame(self)
+        self.leftButtonBar=buttonSection(self)
+        self.rightButtonBar=buttonSection(self)
         #Grid
-        self.topBar.grid(row=0,column=0,sticky="EW",columnspan=3)
+        self.topBar.grid(row=0,column=0,sticky="EW",columnspan=3,pady=15)
         self.allCatSection.grid(row=1,column=0,sticky="NSEW")
         self.allItemSection.grid(row=1,column=1,sticky="NSEW")
         self.viewItemSection.grid(row=1,column=2,sticky="NSEW")
+        self.leftButtonBar.grid(row=2,column=0,sticky="EW",columnspan=2)
+        self.rightButtonBar.grid(row=2,column=2,sticky="EW")
+        #Grid Config
+        self.topBar.gridConfig(0)
+        self.allCatSection.grid_columnconfigure(0,weight=1)
+        self.allItemSection.grid_columnconfigure(0,weight=1)
+        self.viewItemSection.grid_columnconfigure(0,weight=1)
+        self.viewItemSection.grid_rowconfigure(1,weight=1)
+        #--------Second Layer---------
+        #Sections
+        self.catTopBar=mainFrame(self.allCatSection)
+        self.itemTopBar=mainFrame(self.allItemSection)
+        self.viewItemTopBar=mainFrame(self.viewItemSection)
+        #Grid
+        self.catTopBar.grid(row=0,column=0,sticky="EW")
+        self.itemTopBar.grid(row=0,column=0,sticky="EW")
+        self.viewItemTopBar.grid(row=0,column=0,sticky="EW")
         #Config
-        self.topBar.config(bg="#27E19E")
-        self.allCatSection.config(bg="#4F4596")
-        self.allItemSection.config(bg="#E54E49")
-        self.viewItemSection.config(bg="#92E120")
+        self.catTopBar.gridConfig(0)
+        self.itemTopBar.gridConfig(0)
+        self.viewItemTopBar.gridConfig(0)
+
+        #--------Widgets---------
+        #Search Bar Top
+        self.searchEntry=advancedEntry(self.topBar)
+        self.searchEntry.grid(row=0,column=0)
+        #Label for cat
+        self.catLabel=advancedLabel(self.catTopBar,text="Categories")
+        self.catLabel.grid(row=0,column=0)
+        #Label for items
+        self.itemLabel=advancedLabel(self.itemTopBar,text="Items")
+        self.itemLabel.grid(row=0,column=0)
+        #Label for viewItem section
+        self.viewItemLabel=advancedLabel(self.viewItemTopBar,text="Viewing item")
+        self.viewItemLabel.grid(row=0,column=0)
+        #View data section
+        self.viewItemSubScreen=viewItemSubScreen(self.viewItemSection)
+        self.viewItemSubScreen.grid(row=1,column=0,sticky="NSEW")
+
+        #Buttons at bottom
+        self.leftButtonBar.addButton("Back")
+        self.leftButtonBar.addButton("New")
+        self.rightButtonBar.addButton("Delete")
+        self.rightButtonBar.addButton("Edit")
+        self.rightButtonBar.addButton("Save")
+
+        #Colour
+        self.viewItemSubScreen.colour("#5460BD")
+        self.allItemSection.colour("#4F58A8")
+        self.allCatSection.colour("#4B54A1")
+        self.catTopBar.colour("#E5E4E6")
+        self.itemTopBar.colour("#E5E4E6")
+        self.viewItemTopBar.colour("#E5E4E6")
+        self.leftButtonBar.colour("#B4D9C5")
+        self.rightButtonBar.colour("#B4D9C5")
+
+#---------Sub Screens--------
+
+class viewItemSubScreen(mainFrame):
+    """
+    The section of the screen
+    where the item is being viewed,
+    """
+    def __init__(self,parent):
+        mainFrame.__init__(self,parent)
+
+        #Configire self grid
+        self.grid_columnconfigure(0,weight=1)
+        self.grid_rowconfigure(1,weight=1)
+        #self.grid_columnconfigure(1,weight=1)
+
+        #Add Frames
+        self.topSide=mainFrame(self)
+        self.leftSide=mainFrame(self)
+        self.rightSide=mainFrame(self)
+        #Grid
+        self.topSide.grid(row=0,column=0,columnspan=2,sticky="EW")
+        self.leftSide.grid(row=1,column=0,sticky="NSEW")
+        self.rightSide.grid(row=1,column=1,sticky="NSEW")
+        #Config Sides
+        self.leftSide.grid_columnconfigure(0,weight=1)
+        self.leftSide.grid_rowconfigure(0,weight=1)
+        self.rightSide.grid_columnconfigure(0,weight=1)
+
+        #----Add Label----
+        self.topLabel=advancedLabel(self.topSide,text="Example")
+        self.topLabel.config(font="system 25")
+        self.topLabel.grid(row=0,column=0,sticky="W")
+        #----Add Sections----
+        self.numberOfSections=6
+        self.sectionList=[]
+        for x in range(0,self.numberOfSections):
+            newSection=dataSection(self.leftSide,"Item: "+str(x))
+            newSection.grid(row=x,column=0,pady=7)
+            self.leftSide.grid_rowconfigure(x,weight=1)
+            self.sectionList.append(newSection)
+
+        #----Right Side----
+        self.imageFrame=mainFrame(self.rightSide)
+        self.buttonBar=buttonSection(self.rightSide)
+        self.buttonBar.addButton("Remove")
+        self.buttonBar.addButton("Add")
+        self.noteFrame=mainFrame(self.rightSide)
+        #Grid
+        self.imageFrame.grid(row=0,column=0,sticky="EW")
+        self.buttonBar.grid(row=1,column=0,sticky="EW")
+        self.noteFrame.grid(row=2,column=0,sticky="EW")
+        #Configure
+        self.imageFrame.gridConfig(0)
+        self.noteFrame.gridConfig(0)
+        #----Image----
+        self.canvas = Canvas(self.imageFrame, width = 200, height = 200)      
+        self.canvas.grid(row=0,column=0)
+        self.img = PhotoImage(file="sampleImage.gif")      
+        self.canvas.create_image(0,0, anchor=NW, image=self.img)
 
 
-        Label(self.topBar,text="HELLO",font="Avenir 20").grid(row=0,column=0)
 
-
-
+        
 #---------Popups--------
 
 class createDatabaseWindow(mainTopLevel):
