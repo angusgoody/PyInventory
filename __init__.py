@@ -77,6 +77,40 @@ class dbHomeScreen(screen):
         self.buttonBar.grid(row=2,column=0)
         self.buttonBar.addButton("Back")
 
+class viewScreen(screen):
+    """
+    Big Boi screen where
+    the contents
+    of the DB are presented
+    """
+    def __init__(self,controller):
+        screen.__init__(self,controller,"Database")
+
+        #Configure Grid
+        self.grid_rowconfigure(1,weight=1)
+        self.grid_columnconfigure(0,weight=1)
+        self.grid_columnconfigure(1,weight=1)
+        self.grid_columnconfigure(2,weight=3)
+        #Sections
+        self.topBar=mainFrame(self)
+        self.allCatSection=mainFrame(self)
+        self.allItemSection=mainFrame(self)
+        self.viewItemSection=mainFrame(self)
+        #Grid
+        self.topBar.grid(row=0,column=0,sticky="EW",columnspan=3)
+        self.allCatSection.grid(row=1,column=0,sticky="NSEW")
+        self.allItemSection.grid(row=1,column=1,sticky="NSEW")
+        self.viewItemSection.grid(row=1,column=2,sticky="NSEW")
+        #Config
+        self.topBar.config(bg="#27E19E")
+        self.allCatSection.config(bg="#4F4596")
+        self.allItemSection.config(bg="#E54E49")
+        self.viewItemSection.config(bg="#92E120")
+
+
+        Label(self.topBar,text="HELLO",font="Avenir 20").grid(row=0,column=0)
+
+
 
 #---------Popups--------
 
@@ -136,8 +170,8 @@ class addItemWindow(mainTopLevel):
         self.centerFrame=mainFrame(self)
         self.centerFrame.grid(row=0,column=0)
         #Add data sections
-        self.databaseNameSection=dataSection(self.centerFrame,"Item Name:"+" "*2)
-        self.databaseNameSection.grid(row=0,column=0,pady=15)
+        self.itemNameSection=dataSection(self.centerFrame,"Item Name:"+" "*2)
+        self.itemNameSection.grid(row=0,column=0,pady=15)
         #Select Category
         self.categorySection=optionMenuSection(self.centerFrame,"Category: "+" "*2)
         self.categorySection.grid(row=1,column=0,pady=15)
@@ -176,7 +210,6 @@ class addItemWindow(mainTopLevel):
         self.currentTemplate=tmpInstance
         #Update the text
         self.templateSection.optionVar.set(name)
-
 
     def loadContents(self,currentDB,templateManager):
         """
@@ -220,6 +253,33 @@ class addItemWindow(mainTopLevel):
             if display == "None":
                 tmpMenu.insert_separator(1)
 
+class addCatWindow(mainTopLevel):
+    """
+    Popup window
+    to allow users to create
+    a new category
+    """
+    def __init__(self,windowInstance):
+        mainTopLevel.__init__(self,windowInstance,"Create Category")
+        #Config
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0,weight=1)
+        #Center
+        self.centerFrame=mainFrame(self)
+        self.centerFrame.grid(row=0,column=0)
+        #Add Data Section
+        self.catNameSection=dataSection(self.centerFrame,"Category Name:"+" "*2)
+        self.catNameSection.grid(row=0,column=0,pady=15)
+        self.parentCatSection=optionMenuSection(self.centerFrame,"Parent Category:"+" "*2)
+        self.parentCatSection.grid(row=1,column=0,pady=15)
+        #Add Button Bar
+        self.buttonBar=buttonSection(self)
+        self.buttonBar.grid(row=1,column=0)
+        self.buttonBar.addButton("Cancel")
+        self.buttonBar.addButton("Save")
+        #Add exit button command
+        self.buttonBar.getButton("Cancel").config(command=self.quit)
+
 #---------Other Classes--------
 
 class tempDatabase:
@@ -257,6 +317,7 @@ class inventoryWindow(Tk):
         self.startScreen=startScreen(self.screenMaster)
         self.startScreen.show()
         self.dbHomeScreen=dbHomeScreen(self.screenMaster)
+        self.viewScreen=viewScreen(self.screenMaster)
 
         #----------Commands---------
         #-----Start Screen-----
@@ -266,8 +327,8 @@ class inventoryWindow(Tk):
         #-----DBHome-----
         self.dbHomeScreen.buttonBar.getButton("Back").config(command=self.closeDatabase)
         self.dbHomeScreen.addItemButton.config(command=self.launchAddItemWindow)
-        #self.dbHomeScreen.addCategoryButton.config(command=self.laun)
-
+        self.dbHomeScreen.addCategoryButton.config(command=self.launchAddCatWindow)
+        self.dbHomeScreen.viewAllButton.config(command=self.viewAll)
         #----------Last Calls---------
         
         self.loadAllUserDatabases()
@@ -357,8 +418,6 @@ class inventoryWindow(Tk):
         self.dbHomeScreen.titleVar.set(displayText)
         self.currentDB=dataBaseObject
 
-    #---------Lambda Functions----------
-
     #---------Button Commands----------
 
     def launchCreateDatabaseWindow(self):
@@ -380,6 +439,13 @@ class inventoryWindow(Tk):
         newWindow.loadContents(self.currentDB,self.templateManager)
         newWindow.runWindow()
 
+    def launchAddCatWindow(self):
+        """
+        When the user clicks "add category"
+        this function launches the window
+        """
+        newWindow=addCatWindow(self)
+        newWindow.runWindow()
     def attemptOpenDatabase(self):
         """
         Called when user clicks
@@ -399,6 +465,13 @@ class inventoryWindow(Tk):
         self.loadAllUserDatabases()
         self.startScreen.show()
 
+
+    def viewAll(self):
+        """
+        Called when the user clicks
+        "View All" button
+        """
+        self.viewScreen.show()
 
     def exitProgram(self):
         """
